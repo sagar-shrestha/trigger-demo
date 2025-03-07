@@ -1,0 +1,85 @@
+CREATE TRIGGER trg_user_detail_audit_insert
+AFTER INSERT ON demo.user_detail
+FOR EACH ROW
+BEGIN
+
+        INSERT INTO demo.user_detail_audit_log 
+        (operation_type, before_operation, after_operation, operation_datetime, user)
+        VALUES 
+        ('INSERT', NULL, 
+            JSON_OBJECT(
+                'user_id', NEW.id, 
+                'name', NEW.name, 
+                'email', NEW.email,
+                'phone', NEW.phone,
+                'creation_time', NEW.creation_time,
+                'modification_time', NEW.modification_time
+            ), 
+            CURRENT_TIMESTAMP(), CURRENT_USER()
+        );
+    END;
+
+CREATE TRIGGER trg_user_detail_audit_update
+AFTER UPDATE ON demo.user_detail
+FOR EACH ROW
+BEGIN
+        INSERT INTO demo.user_detail_audit_log 
+        (operation_type, before_operation, after_operation, operation_datetime, user)
+        VALUES 
+        ('UPDATE',  
+            JSON_OBJECT(
+                'user_id', OLD.id, 
+                'name', OLD.name, 
+                'email', OLD.email,
+                'phone', OLD.phone,
+                'creation_time', OLD.creation_time,
+                'modification_time', OLD.modification_time
+            ),
+            JSON_OBJECT(
+                'user_id', NEW.id, 
+                'name', NEW.name, 
+                'email', NEW.email,
+                'phone', NEW.phone,
+                'creation_time', NEW.creation_time,
+                'modification_time', NEW.modification_time
+            ),
+            CURRENT_TIMESTAMP, CURRENT_USER()
+        );
+    END;
+
+CREATE TRIGGER trg_user_detail_audit_delete
+AFTER DELETE ON demo.user_detail
+FOR EACH ROW
+BEGIN
+        INSERT INTO demo.user_detail_audit_log 
+        (operation_type, before_operation, after_operation, operation_datetime, user)
+        VALUES 
+        ('DELETE',  
+            JSON_OBJECT(
+                'user_id', OLD.id, 
+                'name', OLD.name, 
+                'email', OLD.email,
+                'phone', OLD.phone,
+                'creation_time', OLD.creation_time,
+                'modification_time', OLD.modification_time
+            ), 
+            NULL,
+            CURRENT_TIMESTAMP, CURRENT_USER()
+        );
+END;
+
+
+
+INSERT INTO demo.user_detail
+(name, email, phone, creation_time, modification_time)
+VALUES('sagar', NULL, NULL, current_timestamp(), current_timestamp());
+
+SELECT CURRENT_USER();
+
+UPDATE demo.user_detail
+SET name='sagarr', email=NULL, phone=NULL, creation_time=current_timestamp(), modification_time=current_timestamp()
+WHERE id=1;
+
+DELETE FROM demo.user_detail
+WHERE id=1;
+
